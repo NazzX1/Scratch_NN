@@ -7,9 +7,6 @@ import (
 	"math/rand"
 	"os"
 	"strconv"
-	"time"
-
-	"golang.org/x/tools/go/analysis/passes/nilness"
 )
 
 type DataPoint struct {
@@ -78,8 +75,24 @@ func ShuffleData(images [][]float64, labels []int) ([][]float64, []int){
 	
 }
 
-// TODO: create batches and then go back to fix the bias gradient
+func CreateBatches(images [][]float64, labels []int, batchSize int) ([][][]float64, [][]int){
+	var imagesBatches [][][]float64
+	var labelsBatches [][]int
 
-func CreateBatches(images [][]float64, labels []int, batchSize int){
+	for i:=0; i< len(images) ; i+= batchSize{
+		end := i + batchSize
+		if end > len(images){
+			end = len(images)
+		}
+
+		imagesBatch := images[i:end]
+		labelsBatch := labels[i:end]
+
+		imagesBatches = append(imagesBatches, imagesBatch)
+		labelsBatches = append(labelsBatches, labelsBatch)
+	}
+
+	return imagesBatches, labelsBatches
 
 }
+
