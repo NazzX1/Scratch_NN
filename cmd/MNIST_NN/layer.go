@@ -40,6 +40,7 @@ func NewLayer(numIn, numOut int ,randomizer *rand.Rand) *Layer{
 	l.weightedInputs = make([]float64, numOut)
 
 	l.InitializeRandomWeights(randomizer)
+	l.InitializeRandomBiases(randomizer)
 
 
 	return l
@@ -52,6 +53,12 @@ func (l *Layer) SetActivationFn(a ActivationType){
 func (l *Layer) InitializeRandomWeights(randomizer *rand.Rand){
 	for i := range l.Weights{
 		l.Weights[i] = randomIn(randomizer, 1) / math.Sqrt((float64(l.NumIn)))
+	}
+}
+
+func (l *Layer) InitializeRandomBiases(randomizer *rand.Rand){
+	for i := range l.Biases{
+		l.Biases[i] = randomIn(randomizer, 1) / math.Sqrt((float64(l.NumIn)))
 	}
 }
 
