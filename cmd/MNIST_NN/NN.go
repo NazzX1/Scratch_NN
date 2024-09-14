@@ -60,29 +60,35 @@ func (nn *NN) UpdateWeights(){
 
 
 
-func (nn *NN) Train(inputs [][]float64, expectedOutputs [][]float64) {
+func (nn *NN) Train(inputs [][][]float64, expectedOutputs [][][]float64) {
 	for epoch := 0; epoch < int(nn.epochs); epoch++ {
-		for i, input := range inputs {
-			// Forward pass
-			activations := nn.ForwardPropagation(input)
+		for batchIndex, batchInputs := range inputs {
+			batchOutputs := expectedOutputs[batchIndex]
 
-			// Compute loss
-			loss := GetLossFunc(nn.LossFn).function(activations, expectedOutputs[i])
-			fmt.Printf("Epoch %d, Loss: %f\n", epoch, loss)
+			for i, input := range batchInputs {
+				// Forward pass
+				activations := nn.ForwardPropagation(input)
 
-			// Backward pass
-			nn.BackwardPropagation(expectedOutputs[i])
+				// Get the one-hot encoded target output
+				targets := batchOutputs[i]
 
-			// Update weights
-			nn.UpdateWeights()
+				// Compute loss
+				loss := GetLossFunc(nn.LossFn).function(activations, targets)
+				fmt.Printf("Epoch %d, Batch %d, Sample %d, Loss: %f\n", epoch, batchIndex, i, loss)
+
+				// Backward pass
+				nn.BackwardPropagation(targets)
+
+				// Update weights
+				nn.UpdateWeights()
+			}
 		}
 	}
 }
 
 
+
 func (nn *NN) Predict(inputs []float64) []float64 {
-	// Forward pass through the network to get predictions
-	// Assuming the last layer outputs class probabilities
 	for _, layer := range nn.layers {
 		inputs = layer.CalculatingLearningOutputs(inputs)
 	}

@@ -56,7 +56,7 @@ func PrepareDataset(data [][]string) ([][]float64, []int){
 			if err != nil {
 				log.Fatal(err)
 			}
-			image = append(image, float64(pixelValue)/250) // Normalize it to [0, 1]
+			image = append(image, float64(pixelValue)/250) // Scale it to [0, 1]
 		}
 		images = append(images, image)
 	}
@@ -75,9 +75,22 @@ func ShuffleData(images [][]float64, labels []int) ([][]float64, []int){
 	
 }
 
-func CreateBatches(images [][]float64, labels []int, batchSize int) ([][][]float64, [][]int){
+func ToOneHot(labels []int, numClasses int) [][]float64 {
+	oneHot := make([][]float64, len(labels))
+	for i, label := range labels {
+		encoded := make([]float64, numClasses)
+		if label >= 0 && label < numClasses {
+			encoded[label] = 1.0
+		}
+		oneHot[i] = encoded
+	}
+	return oneHot
+}
+
+
+func CreateBatches(images [][]float64, labels [][]float64, batchSize int) ([][][]float64, [][][]float64){
 	var imagesBatches [][][]float64
-	var labelsBatches [][]int
+	var labelsBatches [][][]float64
 
 	for i:=0; i< len(images) ; i+= batchSize{
 		end := i + batchSize
