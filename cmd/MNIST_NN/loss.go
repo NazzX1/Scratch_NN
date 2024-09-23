@@ -1,6 +1,7 @@
 package main
 
-//import "math"
+import "math"
+
 
 
 type LossType int 
@@ -17,7 +18,7 @@ type Loss interface{
 	function(predictedOutputs,expectedOutputs []float64) float64
 	prime_function(predictedOutputs,expectedOutputs float64) float64
 }
-type loss struct{}
+
 
 func GetLossFunc(lossType LossType) Loss{
 	switch lossType {
@@ -25,7 +26,7 @@ func GetLossFunc(lossType LossType) Loss{
 		return MeanSquaredError{}
 	
 	case CrossEntropy_T:
-		return nil/*CrossEntropy{}*/
+		return CrossEntropy{}
 	
 	
 	default:
@@ -54,14 +55,24 @@ func (mse MeanSquaredError) prime_function(predictedOutputs, expectedOutputs flo
 
 type CrossEntropy struct{}
 
-/*func (ce CrossEntropy) function(predictedOutputs, expectedOutputs []float64) float64  {
+func (ce CrossEntropy) function(predictedOutputs, expectedOutputs []float64) float64  {
 	const epsilon = 1e-15
+    var sum float64
 
-	for i := 0; i< len(predictedOutputs); i++{
-		predictedOutputs[i] = math.Max(math.Min(predictedOutputs[i],1-epsilon),epsilon)
-		sum += expectedOutputs[i]*math.Log(predictedOutputs[i]) + (1 - predictedOutputs[i])*math.Log(1-predictedOutputs[i])
-	}
-} */
+    for i := 0; i < len(predictedOutputs); i++ {
+        predicted := math.Max(math.Min(predictedOutputs[i], 1-epsilon), epsilon)
+        
+        sum += expectedOutputs[i]*math.Log(predicted) + (1-predictedOutputs[i])*math.Log(1-predicted)
+    }
+
+    return -sum / float64(len(predictedOutputs))
+}
+
+func (ce CrossEntropy) prime_function(predictedOutput, expectedOutput float64) float64 {
+    const epsilon = 1e-15
+    predicted := math.Max(math.Min(predictedOutput, 1-epsilon), epsilon)
+    return - (expectedOutput / predicted) + ((1 - expectedOutput) / (1 - predicted))
+}
 
 
 
