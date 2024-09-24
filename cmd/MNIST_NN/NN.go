@@ -47,7 +47,7 @@ func (nn *NN) BackwardPropagation(expectedOutputs []float64) {
 		layer := nn.layers[i]
 		nexLayer := nn.layers[i+1]
 
-		layer.CalculateHiddenLayerLossGradientbyW(nexLayer, nil)
+		layer.CalculateHiddenLayerLossGradientbyW(nexLayer, layer.Activations)
 	}
 }
 
@@ -60,28 +60,28 @@ func (nn *NN) UpdateWeights(){
 
 
 
-func (nn *NN) Train(inputs [][][]float64, expectedOutputs [][][]float64) {
+func (nn *NN) Train(inputs [][]float64, expectedOutputs [][]float64) {
+	numSamples := len(inputs)
+
 	for epoch := 0; epoch < int(nn.epochs); epoch++ {
-		for batchIndex, batchInputs := range inputs {
-			batchOutputs := expectedOutputs[batchIndex]
+		// Iterate over each sample
+		for i := 0; i < numSamples; i++ {
+			// Get the input and expected output for the current sample
+			input := inputs[i]
+			targets := expectedOutputs[i]
 
-			for i, input := range batchInputs {
-				// Forward pass
-				activations := nn.ForwardPropagation(input)
+			// Forward pass
+			activations := nn.ForwardPropagation(input)
 
-				// Get the one-hot encoded target output
-				targets := batchOutputs[i]
+			// Compute loss
+			loss := GetLossFunc(nn.LossFn).function(activations, targets)
+			fmt.Printf("Epoch %d, Sample %d, Loss: %f\n", epoch, i, loss)
 
-				// Compute loss
-				loss := GetLossFunc(nn.LossFn).function(activations, targets)
-				fmt.Printf("Epoch %d, Batch %d, Sample %d, Loss: %f\n", epoch, batchIndex, i, loss)
+			// Backward pass
+			nn.BackwardPropagation(targets)
 
-				// Backward pass
-				nn.BackwardPropagation(targets)
-
-				// Update weights
-				nn.UpdateWeights()
-			}
+			// Update weights
+			nn.UpdateWeights()
 		}
 	}
 }
@@ -94,5 +94,33 @@ func (nn *NN) Predict(inputs []float64) []float64 {
 	}
 	return inputs
 }
+
+
+func (nn *NN) CalculateAccuracy(inputs [][]float64, expectedOutputs [][]float64) float64 {
+    correctPredictions := 0
+    totalPredictions := len(inputs) // Set totalPredictions to the number of input samples
+
+    for i, input := range inputs {
+        // Forward pass
+        predictions := nn.ForwardPropagation(input)
+
+        // Get the predicted class (index of the highest value)
+        predictedClass := GetMaxIndex(predictions)
+
+        // Get the true class from the one-hot encoded target output
+        trueClass := GetMaxIndex(expectedOutputs[i]) // Use expectedOutputs instead of inputs
+
+        // Compare prediction to true class
+        if predictedClass == trueClass {
+            correctPredictions++
+        }
+    }
+
+    // Calculate accuracy
+    accuracy := float64(correctPredictions) / float64(totalPredictions)
+    return accuracy
+}
+
+
 
 

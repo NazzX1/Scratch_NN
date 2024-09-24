@@ -54,12 +54,17 @@ func (l *Layer) InitializeRandomWeights(randomizer *rand.Rand){
 	for i := range l.Weights{
 		l.Weights[i] = randomIn(randomizer, 1) / math.Sqrt((float64(l.NumIn)))
 	}
+
+	println(l.Weights)
 }
 
 func (l *Layer) InitializeRandomBiases(randomizer *rand.Rand){
 	for i := range l.Biases{
 		l.Biases[i] = randomIn(randomizer, 1) / math.Sqrt((float64(l.NumIn)))
 	}
+
+	println(l.Biases)
+
 }
 
 func randomIn(randomizer *rand.Rand, lambda float64) float64{
@@ -98,8 +103,8 @@ func (l *Layer) CalculateLastLayerLossGradientbyW(expectedOutputs []float64, los
 
         for j := 0; j < l.NumIn; j++ {
             weightIndex := i * l.NumIn + j
-
-            activationDerivative := l.ActivationFunc.prime_function(l.Weights, j)
+			activationDerivative := l.ActivationFunc.prime_function(l.Weights, j)
+			l.lossGradientB[i] = lossDerivative * activationDerivative
             l.lossGradientW[weightIndex] = lossDerivative * activationDerivative
         }
     }
@@ -117,6 +122,8 @@ func (l *Layer) CalculateHiddenLayerLossGradientbyW(nextLayer *Layer, oldNodeVal
         }
         
         activationDerivative := l.ActivationFunc.prime_function(l.weightedInputs, i)
+		
+		l.lossGradientB[i] = errorFromNextLayer * activationDerivative
         
         for j := 0; j < numInputs; j++ {
             weightIndex := i * numInputs + j
@@ -128,7 +135,11 @@ func (l *Layer) CalculateHiddenLayerLossGradientbyW(nextLayer *Layer, oldNodeVal
 
 func (l *Layer) UpdateWeights(learningRate float64) {
 	for i := range l.Weights {
-		l.Weights[i] -= learningRate * l.lossGradientW[i]
+		println("[UPDATE] ",l.Weights[i])
+		// l.Weights[i] -= learningRate * l.lossGradientW[i]
+		l.Weights[i] =l.Weights[i] - learningRate * l.lossGradientW[i]
+		println("[gradient]", l.lossGradientW[i])
+		println("[NEW] ",l.Weights[i])
 	}
 	for i := range l.Biases {
 		l.Biases[i] -= learningRate * l.lossGradientB[i]
