@@ -6,7 +6,6 @@ import (
 	"time"
 )
 
-// Assuming LoadDataset, PrepareDataset, ShuffleData, ToOneHot, CreateBatches, and GetMaxIndex are already defined
 
 func main() {
 	// Load and prepare the dataset
