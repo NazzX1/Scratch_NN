@@ -1,8 +1,10 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"math/rand"
+	"os"
 )
 
 type NN struct {
@@ -24,9 +26,9 @@ func NewNN(lr float64, e uint64, activationType ActivationType, lossType LossTyp
 	}
 }
 
-func (nn *NN) AddLayer(numIn, numOut int, randomizer *rand.Rand){
+func (nn *NN) AddLayer(numIn, numOut int, randomizer *rand.Rand, ActivationF ActivationType){
 	layer := NewLayer(numIn, numOut,randomizer)
-	layer.SetActivationFn(nn.ActivationFn)
+	layer.SetActivationFn(ActivationF)
 	nn.layers = append(nn.layers, layer)
 }
 
@@ -64,9 +66,7 @@ func (nn *NN) Train(inputs [][]float64, expectedOutputs [][]float64) {
 	numSamples := len(inputs)
 
 	for epoch := 0; epoch < int(nn.epochs); epoch++ {
-		// Iterate over each sample
 		for i := 0; i < numSamples; i++ {
-			// Get the input and expected output for the current sample
 			input := inputs[i]
 			targets := expectedOutputs[i]
 
@@ -98,27 +98,52 @@ func (nn *NN) Predict(inputs []float64) []float64 {
 
 func (nn *NN) CalculateAccuracy(inputs [][]float64, expectedOutputs [][]float64) float64 {
     correctPredictions := 0
-    totalPredictions := len(inputs) // Set totalPredictions to the number of input samples
+    totalPredictions := len(inputs)
 
     for i, input := range inputs {
-        // Forward pass
+
         predictions := nn.ForwardPropagation(input)
 
-        // Get the predicted class (index of the highest value)
         predictedClass := GetMaxIndex(predictions)
 
-        // Get the true class from the one-hot encoded target output
-        trueClass := GetMaxIndex(expectedOutputs[i]) // Use expectedOutputs instead of inputs
+        trueClass := GetMaxIndex(expectedOutputs[i]) 
 
-        // Compare prediction to true class
         if predictedClass == trueClass {
             correctPredictions++
         }
     }
 
-    // Calculate accuracy
     accuracy := float64(correctPredictions) / float64(totalPredictions)
     return accuracy
+}
+
+func (nn *NN) SaveModel(filename string) error {
+	modelData := make(map[string]interface{})
+
+	layerData := make([]map[string]interface{}, len(nn.layers))
+	for i, layer := range nn.layers {
+		layerData[i] = map[string]interface{}{
+			"numIn":     layer.NumIn,
+			"numOut":    layer.NumOut,
+			"weights":   layer.Weights,
+			"biases":    layer.Biases,
+		}
+	}
+
+	modelData["layers"] = layerData
+	modelData["learningRate"] = nn.learningRate
+	modelData["epochs"] = nn.epochs
+	modelData["activationFn"] = nn.ActivationFn
+	modelData["lossFn"] = nn.LossFn
+
+	file, err := os.Create(filename)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	encoder := json.NewEncoder(file)
+	return encoder.Encode(modelData)
 }
 
 

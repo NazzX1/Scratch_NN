@@ -82,15 +82,20 @@ func (a SoftmaxActivation) function(inputs []float64, index int) float64{
 } 
 
 func (a SoftmaxActivation) prime_function(inputs []float64, index int) float64 {
+	softmaxVals := make([]float64, len(inputs))
 	sum := .0
-	for _, input := range inputs{
+	for _, input := range inputs {
 		sum += math.Exp(input)
 	}
-	x := math.Exp(inputs[index]) / sum
+	for i, input := range inputs {
+		softmaxVals[i] = math.Exp(input) / sum
+	}
 
-	return (x * sum - x * x) / sum * sum
-	
+	softmaxIndex := softmaxVals[index]
+
+	return softmaxIndex * (1 - softmaxIndex)
 }
+
 
 
 

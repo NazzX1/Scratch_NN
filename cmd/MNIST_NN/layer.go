@@ -135,11 +135,10 @@ func (l *Layer) CalculateHiddenLayerLossGradientbyW(nextLayer *Layer, oldNodeVal
 
 func (l *Layer) UpdateWeights(learningRate float64) {
 	for i := range l.Weights {
-		println("[UPDATE] ",l.Weights[i])
-		// l.Weights[i] -= learningRate * l.lossGradientW[i]
+		// println("[UPDATE] ",l.Weights[i])
 		l.Weights[i] =l.Weights[i] - learningRate * l.lossGradientW[i]
-		println("[gradient]", l.lossGradientW[i])
-		println("[NEW] ",l.Weights[i])
+		// println("[gradient]", l.lossGradientW[i])
+		// println("[NEW] ",l.Weights[i])
 	}
 	for i := range l.Biases {
 		l.Biases[i] -= learningRate * l.lossGradientB[i]

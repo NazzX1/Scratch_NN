@@ -30,15 +30,14 @@ func main() {
 
 	// Initialize neural network
 	randomizer := rand.New(rand.NewSource(time.Now().UnixNano()))
-	nn := NewNN(0.01, 20, Sigmoid, CrossEntropy_T) 
-	nn.AddLayer(784, 128, randomizer)
-	nn.AddLayer(128, 64, randomizer)
-	nn.AddLayer(64, 10, randomizer)
+	nn := NewNN(0.01, 50, Sigmoid, CrossEntropy_T) 
+	nn.AddLayer(784, 128, randomizer, Sigmoid)
+	nn.AddLayer(128, 10, randomizer, Softmax)
 
-	// Train the neural network
 	nn.Train(trainImages, trainLabels)
 
-	// Evaluate the neural network on the test set
 	testAccuracy := nn.CalculateAccuracy(testImages, testLabels)
 	fmt.Printf("Test Accuracy: %f\n", testAccuracy)
+
+	nn.SaveModel("model.json")
 }

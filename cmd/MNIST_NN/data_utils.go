@@ -9,10 +9,7 @@ import (
 	"strconv"
 )
 
-type DataPoint struct {
-	inputs []float64
-	labels int
-}
+
 
 func LoadDataset(path string) [][]string{
 	file, err := os.Open(path)
